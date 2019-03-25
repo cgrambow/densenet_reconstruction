@@ -15,8 +15,8 @@ def parse_args():
     parser.add_argument('-x', '--x_train', dest='x_path', nargs='+', help='Path to noisy measurements')
     parser.add_argument('-y', '--y_train', dest='y_path', nargs='+', help='Path to ground truth')
     parser.add_argument('-s', '--save_dir', default=os.getcwd(), help='Directory to save weights in')
-    parser.add_argument('-b', '--batch_size', type=int, default=16, help='Batch size')
-    parser.add_argument('-e', '--epochs', type=int, default=100, help='Maximum number of epochs')
+    parser.add_argument('-b', '--batch_size', type=int, default=32, help='Batch size')
+    parser.add_argument('-e', '--epochs', type=int, default=500, help='Maximum number of epochs')
     parser.add_argument('-v', '--validation_split', type=float, default=0.05,
                         help='Fraction of data to use for validation')
     parser.add_argument('-p', '--patience', type=int, default=10, help='Patience for early stopping')
