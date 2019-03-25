@@ -35,11 +35,6 @@ def build(input_shape=(256, 256, 1),
                             use_bias=False,
                             kernel_initializer=keras.initializers.he_uniform(),
                             name='down/conv1/conv')(inputs)
-    x = keras.layers.BatchNormalization(axis=layers.bn_axis, epsilon=1.001e-5,
-                                        gamma_regularizer=keras.layers.regularizers.l2(1e-4),
-                                        name='down/conv1/bn')(x)
-    x = keras.layers.Activation('relu', name='down/conv1/relu')(x)
-    x = keras.layers.MaxPooling2D(3, strides=2, padding='same', name='down/pool1')(x)
 
     for i, b in enumerate(blocks[:-1]):
         x = layers.dense_block(x, b, growth_rate, bottleneck,
