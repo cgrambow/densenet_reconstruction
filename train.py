@@ -39,8 +39,13 @@ def main():
     assert len(x) == len(y)
     p = np.random.permutation(len(x))
     x, y = x[p], y[p]
-    x /= x.max()  # Scale images
-    y /= y.max()
+
+    # Scale images
+    xmax = x.max()
+    ymax = y.max()
+    print('x_max: {}, y_max: {}'.format(xmax, ymax))
+    x /= xmax
+    y /= ymax
 
     model = nn.build()
     nn.train(model, x, y, args.save_dir,
@@ -53,8 +58,8 @@ def main():
         x_test = data.load_data(args.x_test_path)
         y_test = data.load_data(args.y_test_path)
         assert len(x_test) == len(y_test)
-        x_test /= x_test.max()
-        y_test /= y_test.max()
+        x_test /= xmax
+        y_test /= ymax
         test_loss = model.evaluate(x_test, y_test)
         print('Test loss:', test_loss)
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8
 
+import math
 import os
 
 import keras
@@ -88,8 +89,10 @@ def build(input_shape=(256, 256, 1),
 
 
 def train(model, x, y, save_dir,
-          batch_size=32, max_epochs=500, validation_split=0.05, patience=10):
-    model.compile(loss=npcc, optimizer='adam')
+          batch_size=32, max_epochs=500, validation_split=0.05, patience=10,
+          lr0=0.001, maxnorm=1.0):
+    optimizer = keras.optimizers.Adam(lr=lr0, clipnorm=maxnorm)
+    model.compile(loss=npcc, optimizer=optimizer)
     model.summary()
 
     model_name = 'model.{epoch:03d}.h5'
@@ -103,9 +106,11 @@ def train(model, x, y, save_dir,
     early_stopping = keras.callbacks.EarlyStopping(patience=patience,
                                                    verbose=1,
                                                    restore_best_weights=True)
+    lr_scheduler = keras.callbacks.LearningRateScheduler(lambda e, lr: lr0 * math.exp(-0.1 * e),
+                                                         verbose=1)
     lr_reducer = keras.callbacks.ReduceLROnPlateau(factor=0.5,
                                                    patience=5)
-    callbacks = [checkpoint, early_stopping, lr_reducer]
+    callbacks = [checkpoint, early_stopping, lr_scheduler, lr_reducer]
 
     model.fit(x, y,
               batch_size=batch_size,
