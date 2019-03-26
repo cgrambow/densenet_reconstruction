@@ -30,6 +30,8 @@ def parse_args():
                         help='Compression rate for filters in transition blocks')
     parser.add_argument('-n', '--bottleneck', action='store_true',
                         help='Include bottlenecking convolution in dense blocks')
+    parser.add_argument('-lr', '--learning_rate', type=float, default=0.001, help='Initial learning rate')
+    parser.add_argument('-ld', '--decay', type=float, default=0.1, help='Learning rate decay')
     parser.add_argument('-xt', '--x_test', dest='x_test_path', help='Path to noisy measurements (test data)')
     parser.add_argument('-yt', '--y_test', dest='y_test_path', help='Path to ground truth(test data)')
     return parser.parse_args()
@@ -71,7 +73,8 @@ def main():
              batch_size=args.batch_size,
              max_epochs=args.epochs,
              validation_split=args.validation_split,
-             patience=args.patience)
+             patience=args.patience,
+             lr0=args.learning_rate, decay=args.decay)
 
     if args.x_test_path is not None and args.y_test_path is not None:
         x_test = data.load_data(args.x_test_path)

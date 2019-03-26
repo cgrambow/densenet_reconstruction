@@ -97,7 +97,7 @@ def build(input_shape=(256, 256, 1),
 
 def train(model, x, y, save_dir,
           batch_size=32, max_epochs=500, validation_split=0.05, patience=10,
-          lr0=0.001, maxnorm=1.0):
+          lr0=0.001, decay=0.1, maxnorm=1.0):
     optimizer = keras.optimizers.Adam(lr=lr0, clipnorm=maxnorm)
     model.compile(loss=npcc, optimizer=optimizer)
     model.summary()
@@ -111,7 +111,7 @@ def train(model, x, y, save_dir,
     early_stopping = keras.callbacks.EarlyStopping(patience=patience,
                                                    verbose=1,
                                                    restore_best_weights=True)
-    lr_scheduler = keras.callbacks.LearningRateScheduler(lambda e, lr: lr0 * math.exp(-0.1 * e),
+    lr_scheduler = keras.callbacks.LearningRateScheduler(lambda e, lr: lr0 * math.exp(-decay * e),
                                                          verbose=1)
     lr_reducer = keras.callbacks.ReduceLROnPlateau(factor=0.5,
                                                    patience=5)
