@@ -13,13 +13,14 @@ K = keras.backend
 
 def build(input_shape=(256, 256, 1),
           feat_maps=16, growth_rate=12, blocks=(3, 5, 7, 9, 11),
-          reduction=0.5, bottleneck=True):
+          dropout=0.2, reduction=0.5, bottleneck=True):
     """Build dense u-net.
     # Arguments
         input_shape: shape of input tensor.
         feat_maps: int, number of feature maps in first convolutional layer.
         growth_rate: int, growth rate in dense blocks.
         blocks: number of layers in each dense block.
+        dropout: float, dropout rate after convolutions.
         reduction: float, compression rate for filters in transition blocks.
         bottleneck: bool, use 1x1 bottleneck convolution in dense blocks.
     # Returns
@@ -37,15 +38,23 @@ def build(input_shape=(256, 256, 1),
                             name='down/conv1/conv')(inputs)
 
     for i, b in enumerate(blocks[:-1]):
-        x = layers.dense_block(x, b, growth_rate, bottleneck,
+        x = layers.dense_block(x, b,
+                               growth_rate=growth_rate,
+                               dropout=dropout,
+                               bottleneck=bottleneck,
                                name='down/dense' + str(i + 2))
         encoder.append(x)
         feat_maps += b * growth_rate
-        x = layers.transition_block_down(x, reduction, name='down/tr' + str(i + 2))
+        x = layers.transition_block_down(x, dropout=dropout,
+                                         reduction=reduction,
+                                         name='down/tr' + str(i + 2))
     encoder.reverse()
 
     # Central layers
-    x = layers.dense_block(x, blocks[-1], growth_rate, bottleneck,
+    x = layers.dense_block(x, blocks[-1],
+                           growth_rate=growth_rate,
+                           dropout=dropout,
+                           bottleneck=bottleneck,
                            output_last=True,
                            name='middle/dense')
     x = keras.layers.BatchNormalization(axis=layers.bn_axis, epsilon=1.001e-5,
@@ -59,7 +68,10 @@ def build(input_shape=(256, 256, 1),
     for i, b in enumerate(blocks):
         feat_maps = int(b * growth_rate * reduction)
         x = layers.transition_block_up(x, encoder[i], feat_maps, name='up/tr' + str(i + 1))
-        x = layers.dense_block(x, b, growth_rate, bottleneck,
+        x = layers.dense_block(x, b,
+                               growth_rate=growth_rate,
+                               dropout=dropout,
+                               bottleneck=bottleneck,
                                output_last=(i + 1 < len(blocks)),
                                name='up/dense' + str(i + 1))
 
@@ -91,8 +103,6 @@ def train(model, x, y, save_dir,
     model.summary()
 
     model_name = 'model.{epoch:03d}.h5'
-    if not os.path.isdir(save_dir):
-        os.makedirs(save_dir)
     model_path = os.path.join(save_dir, model_name)
 
     checkpoint = keras.callbacks.ModelCheckpoint(filepath=model_path,
