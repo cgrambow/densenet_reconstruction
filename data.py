@@ -4,6 +4,7 @@
 import os
 import string
 
+import matplotlib.pyplot as plt
 import numpy as np
 import tables
 
@@ -26,3 +27,12 @@ def load_multiple(paths):
     for path in paths[1:]:
         data = np.concatenate((data, load_data(path)))
     return data
+
+
+def save_img(im, path):
+    fig = plt.figure(figsize=(3.5, 3.5))
+    ax = fig.add_subplot(1, 1, 1)
+    ax.imshow(im, aspect='equal')
+    ax.set_axis_off()
+    extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    fig.savefig(path, bbox_inches=extent, pad_inches=0)
