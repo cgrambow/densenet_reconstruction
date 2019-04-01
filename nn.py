@@ -63,16 +63,16 @@ def build(input_shape=(256, 256, 1),
     x = keras.layers.Activation('relu', name='middle/relu')(x)
 
     # Decoder
-    blocks = blocks[-2::-1]
+    blocks = blocks[::-1]
     i = 0
-    for i, b in enumerate(blocks):
-        feat_maps = int(b * growth_rate * reduction)
+    for i, b in enumerate(blocks[1:]):
+        feat_maps = int(blocks[i] * growth_rate * reduction)
         x = layers.transition_block_up(x, encoder[i], feat_maps, name='up/tr' + str(i + 1))
         x = layers.dense_block(x, b,
                                growth_rate=growth_rate,
                                dropout=dropout,
                                bottleneck=bottleneck,
-                               output_last=(i + 1 < len(blocks)),
+                               output_last=(i + 1 < len(blocks[1:])),
                                name='up/dense' + str(i + 1))
 
     x = keras.layers.BatchNormalization(axis=layers.bn_axis, epsilon=1.001e-5,
