@@ -13,7 +13,7 @@ def load_data(path):
     name, _ = os.path.splitext(os.path.basename(path))
     dataf = tables.open_file(path)
     name2 = name.rstrip(string.digits)
-    if name2 != name:
+    if name2 != name and name2.endswith('_'):
         name = name2[:-1]  # Remove trailing underscore
     data = dataf.get_node('/' + name)[:]
     dataf.close()
