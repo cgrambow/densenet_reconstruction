@@ -4,6 +4,7 @@
 import argparse
 import os
 
+import keras
 import numpy as np
 
 import data
@@ -15,6 +16,7 @@ def parse_args():
     parser.add_argument('-x', '--x_train', dest='x_path', nargs='+', required=True, help='Path to noisy measurements')
     parser.add_argument('-y', '--y_train', dest='y_path', nargs='+', required=True, help='Path to ground truth')
     parser.add_argument('-s', '--save_dir', default=os.getcwd(), help='Directory to save weights in')
+    parser.add_argument('-m', '--model', help='Model to load pretrained weights from')
     parser.add_argument('-b', '--batch_size', type=int, default=32, help='Batch size')
     parser.add_argument('-e', '--epochs', type=int, default=500, help='Maximum number of epochs')
     parser.add_argument('-v', '--validation_split', type=float, default=0.05,
@@ -63,12 +65,15 @@ def main():
         os.makedirs(args.save_dir)
     np.save(os.path.join(args.save_dir, 'xymax.npy'), np.array([xmax, ymax]))
 
-    model = nn.build(feat_maps=args.feat_maps,
-                     growth_rate=args.growth_rate,
-                     blocks=args.blocks,
-                     dropout=args.dropout,
-                     reduction=args.reduction,
-                     bottleneck=args.bottleneck)
+    if args.model is None:
+        model = nn.build(feat_maps=args.feat_maps,
+                         growth_rate=args.growth_rate,
+                         blocks=args.blocks,
+                         dropout=args.dropout,
+                         reduction=args.reduction,
+                         bottleneck=args.bottleneck)
+    else:
+        model = keras.models.load_model(args.model, custom_objects={'npcc': nn.npcc})
     nn.train(model, x, y, args.save_dir,
              batch_size=args.batch_size,
              max_epochs=args.epochs,
